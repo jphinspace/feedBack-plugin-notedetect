@@ -182,6 +182,7 @@ test('chart-state refresh commits atomically when a host getter throws', () => {
     });
     det._syncChartStateFromHw();
     const before = det._getChartState();
+    before.tuningOffsets = before.tuningOffsets.slice();
 
     core.highway.getSongInfo = () => ({ arrangement: 'Bass', tuning: [0, 0, 0, 0], capo: 2 });
     core.highway.getTuning = () => { throw new Error('transform rebuilding'); };
