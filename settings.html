@@ -1,12 +1,6 @@
-<!-- Note Detection settings — main Settings-page section. Most live
-     detection knobs (device, channel, tolerances, the screen-edge
-     flash toggle, etc.) still live in the gear popover beside the
-     Detect button in the player, because the user is mid-song when
-     they tune them. What lives here is the *post-run* benchmark
-     workflow: read out the current session's miss-category breakdown
-     and pull the diagnostic JSON without having to end the session
-     to trigger the summary modal. -->
 
+
+<!-- Post-run settings and diagnostics. Live controls remain in the player popover. -->
 <div class="space-y-6">
     <div>
         <p class="text-xs text-gray-500 leading-relaxed">
@@ -14,22 +8,7 @@
         </p>
     </div>
 
-    <!-- Auto-tune from current session. General-user surface (not gated
-         by tuning mode). Reads several stats from the running diagnostic
-         payload and proposes one-click fixes per row. Replaces the
-         single-knob "A/V Sync auto-calibrate" panel with a fan-out of
-         rows so the user can see at a glance what's off (timing,
-         pitch, method, confidence floor, tuning bias) without having
-         to interpret raw percentile numbers themselves.
-
-         Each row is fed by one of the suggestion-builder fns at the
-         bottom of this file. They're stateless: re-evaluated on every
-         render tick (~1.5 s) so a setting changed elsewhere — gear
-         popover, manual edit, etc. — reflects without a page reload.
-
-         Apply on a row writes the suggestion via noteDetect.applySettings
-         (or window.setAvOffsetMs for A/V), then resets diagnostic
-         counters so the next round measures cleanly. -->
+    <!-- Suggestions are recomputed from the current diagnostic snapshot. -->
     <div class="bg-dark-700/40 border border-gray-800 rounded-xl p-4">
         <div class="flex items-center justify-between mb-2">
             <h4 class="text-sm font-semibold text-gray-300">Auto-tune from current session</h4>
@@ -49,10 +28,6 @@
         </p>
     </div>
 
-    <!-- Scoring HUD skin. Themes the live score/streak HUD and the
-         end-of-song results screen (and the highway's score FX palette).
-         Stored under the standalone 'slopsmith_notedetect_skin' key so the
-         highway renderer can read it without parsing the settings blob. -->
     <div class="bg-dark-700/40 border border-gray-800 rounded-xl p-4 mb-4">
         <label class="block text-sm font-semibold text-gray-300 mb-1" for="nd-skin">Scoring HUD style</label>
         <p class="text-[11px] text-gray-500 leading-relaxed mb-2">
@@ -66,11 +41,6 @@
         </select>
     </div>
 
-    <!-- Results card & sharing. The text-glow A/B (off by default for
-         legibility; on for design review) themes the Song Complete popup AND
-         the shared card image. The save folder is where the card's "Save"
-         button writes the PNG (blank → the user's Pictures folder). Both are
-         standalone localStorage keys so screen.js reads them directly. -->
     <div class="bg-dark-700/40 border border-gray-800 rounded-xl p-4 mb-4">
         <h4 class="text-sm font-semibold text-gray-300 mb-2">Results card &amp; sharing</h4>
         <label class="flex items-start gap-3 cursor-pointer select-none mb-4">
@@ -97,10 +67,7 @@
         <div class="flex gap-2">
             <input type="text" id="nd-save-dir" placeholder="(default: your Pictures folder)"
                    class="flex-1 min-w-0 bg-dark-700 border border-gray-600 rounded-lg px-3 py-2 text-sm text-gray-200 focus:ring-accent/40 focus:border-accent">
-            <!-- Native folder picker — desktop only. The web build has no
-                 bridge, so screen.js keeps this hidden unless
-                 feedBackDesktop.pickDirectory exists; the text field is the
-                 fallback either way. -->
+
             <button type="button" id="nd-save-dir-browse"
                     class="hidden shrink-0 bg-dark-700 border border-gray-600 rounded-lg px-3 py-2 text-sm text-gray-200 hover:border-accent focus:ring-accent/40 focus:border-accent">
                 Browse&hellip;
@@ -143,10 +110,6 @@
         </label>
     </div>
 
-    <!-- Auto-record toggle. A normal user setting (not advanced): every
-         play is captured to static/note_detect_recordings/ for later
-         analysis. Off by default; opt in here. Persisted via the plugin's
-         saveSettings(). -->
     <div class="bg-dark-700/40 border border-gray-800 rounded-xl p-4 mb-4">
         <label class="flex items-start gap-3 cursor-pointer select-none">
             <input type="checkbox" id="nd-auto-record"
@@ -160,10 +123,6 @@
         </label>
     </div>
 
-    <!-- Auto-calibrate A/V offset. On by default. Each play's detections are
-         swept on song-end for the offset that matches the most chart notes,
-         then applied via setAvOffsetMs — compensates the detector's real-time
-         latency so the user never hand-sets the A/V slider. -->
     <div class="bg-dark-700/40 border border-gray-800 rounded-xl p-4 mb-4">
         <label class="flex items-start gap-3 cursor-pointer select-none">
             <input type="checkbox" id="nd-auto-calibrate"
@@ -177,10 +136,6 @@
         </label>
     </div>
 
-    <!-- Tuning-mode toggle. Lives here (where the panels it gates also
-         live) so the user doesn't have to bounce between the gear
-         popover and this page just to reveal developer surfaces.
-         Persisted in localStorage via the plugin's saveSettings(). -->
     <div class="bg-dark-700/40 border border-gray-800 rounded-xl p-4">
         <label class="flex items-start gap-3 cursor-pointer select-none">
             <input type="checkbox" id="nd-tuning-mode"
@@ -193,16 +148,6 @@
             </span>
         </label>
 
-        <!-- Training upload destination. Lives in this same block as
-             the tuning toggle since the training-arm flow is gated
-             behind the same advanced switch. The default is the
-             curated dataset's pCloud public upload link; paste a
-             different pCloud share URL to point uploads at your own
-             folder. Server parses the `code=…` parameter out of
-             whatever's pasted (full share URL, API URL, or bare
-             code). The default is fetched from
-             GET /api/plugins/note_detect/config so routes.py is the
-             single source of truth. -->
         <div class="mt-4 pt-3 border-t border-gray-800">
             <label for="nd-upload-url" class="block text-xs text-gray-300 mb-1">Training upload destination</label>
             <input id="nd-upload-url" type="text" spellcheck="false" autocomplete="off"
@@ -220,12 +165,9 @@
         </div>
     </div>
 
+    <!-- Advanced capture and diagnostic panels are gated by tuning mode. -->
     <div id="nd-tuning-panels" class="space-y-6 hidden">
 
-    <!-- Reference Recording: the actual Arm / Save / Discard controls
-         live in the gear popover next to Detect (a during-play action),
-         not here. This block is a read-only breadcrumb so you can see
-         where your last take landed without re-opening the popover. -->
     <div class="bg-dark-700/40 border border-gray-800 rounded-xl p-4">
         <div class="flex items-center justify-between mb-2">
             <h4 class="text-sm font-semibold text-gray-300">Reference Recording</h4>
@@ -283,15 +225,13 @@
         </p>
     </div>
 
-    </div><!-- /nd-tuning-panels -->
+    </div>
 </div>
 
 <script>
 (function () {
-    // Self-contained: this script runs in the host page's window scope
-    // (not an iframe), so it can call window.noteDetect.* directly. The
-    // singleton may not be ready on first render — retry until it shows
-    // up, then start the periodic refresh.
+
+    // The settings fragment runs in the host page and binds to the default detector lazily.
 
     const labels = {
         pure:         ['Pure (no pitch)',  'bg-gray-500'],
@@ -305,12 +245,6 @@
     function _q(id) { return document.getElementById(id); }
     function _fmt(n) { return (n == null) ? '—' : String(n); }
 
-    // HTML-escape helper for anything we interpolate into innerHTML.
-    // Song metadata (title/artist/arrangement) comes from user-authored
-    // sloppak manifests, and lastError surfaces server text — both can
-    // contain `<script>` or attribute-breakouts. Cheap five-char escape
-    // is enough for any string we then drop between tags or in single-
-    // quoted attributes.
     function _esc(s) {
         return String(s == null ? '' : s)
             .replace(/&/g, '&amp;')
@@ -320,10 +254,6 @@
             .replace(/'/g, '&#39;');
     }
 
-    // Read-only mirror of the most recent save path. The arm / save /
-    // discard controls live in the gear popover, not here, so the
-    // settings page is a between-runs review surface, not a live
-    // recording panel.
     function renderRecording(nd) {
         const savedEl = _q('nd-rec-saved');
         if (!savedEl) return;
@@ -341,38 +271,13 @@
         }
     }
 
-    // ── Auto-tune from current session ───────────────────────────────
-    //
-    // Each suggestion-builder takes the diagnostic payload + current
-    // settings and returns either null (no actionable suggestion) or
-    // an object `{ key, title, state, current, suggested, reasoning,
-    // apply, sampleSizeOk, warnOnly }`:
-    //
-    //   - key:         stable id for the row's DOM
-    //   - title:       human-readable label ("A/V Sync", "Pitch window", …)
-    //   - state:       short caption ("ready — 87 hits", "need 12 more")
-    //   - current:     value the user has now (formatted string)
-    //   - suggested:   value we're proposing (formatted string, or null)
-    //   - reasoning:   why ("p10=-72 p90=+209 → widen to 230 ms")
-    //   - apply:       () => void — performs the write + resets diag
-    //   - sampleSizeOk: true if there's enough data; false → row shows
-    //                   in disabled-state with the state caption only
-    //   - warnOnly:    if true, no Apply button (just a warning row)
-    //
-    // The render loop calls each builder, filters nulls, and renders a
-    // uniform row template. Reset behaviour: every Apply (including
-    // Apply-all) finishes with `resetCalibrationSamples` so the next
-    // tick measures the post-change distribution cleanly.
-
-    // Sample-size gates per row type. See "Open questions" in the PR
-    // description for rationale; can be relaxed once we have real-user
-    // data on convergence speed.
+    // Suggestion builders remain read-only until the user applies a result.
     const _MIN_HITS_FOR_AV  = 5;
     const _MIN_EVENTS_FOR_WINDOW = 20;
     const _MIN_EVENTS_FOR_METHOD = 30;
-    const _MIN_DELTA_TO_SUGGEST_MS = 20;     // A/V skew below this isn't worth applying
-    const _MIN_PITCH_BIAS_CENTS    = 5;      // tuning bias below this is just intonation noise
-    const _MAX_PITCH_SPREAD_FOR_BIAS = 30;   // wider distribution = transposition, not bias
+    const _MIN_DELTA_TO_SUGGEST_MS = 20;
+    const _MIN_PITCH_BIAS_CENTS    = 5;
+    const _MAX_PITCH_SPREAD_FOR_BIAS = 30;
     const _PURE_RATE_FOR_METHOD_SWITCH = 0.40;
 
     function _fmtSigned(v, suffix) {
@@ -381,19 +286,6 @@
         return (r >= 0 ? '+' + r : String(r)) + (suffix || '');
     }
 
-    // Reset diagnostic state after an Apply. `scope`:
-    //   'av'   — only timing-error samples. A/V Sync's math depends
-    //            linearly on timing medians, so a narrow reset is
-    //            enough (and preserves the user's hits/misses counters
-    //            + pitch error history for the other rows).
-    //   'full' — everything (resetDiagnostic). Confidence, method,
-    //            and pitch-window suggestions read summary +
-    //            miss_breakdown + pitch errors, which the narrow
-    //            reset does NOT clear. Without a full reset, the
-    //            very next render would still see the stale pure
-    //            rate / pitch distribution that *triggered* the
-    //            suggestion in the first place, and propose the
-    //            same change forever.
     function _resetAfterApply(nd, scope) {
         if (scope === 'av') {
             if (typeof nd.resetCalibrationSamples === 'function') {
@@ -404,11 +296,6 @@
         if (typeof nd.resetDiagnostic === 'function') nd.resetDiagnostic();
     }
 
-    // ── Suggestion builders ─────────────────────────────────────────
-    //
-    // A/V Sync — same math the previous panel used: subtract the
-    // hit-only median signed timing error from the current av-offset.
-    // Positive median = player landed late → reduce av-offset.
     function _suggestAvSync(d, nd) {
         const curAv = (window.highway && typeof window.highway.getAvOffset === 'function')
             ? Math.round(window.highway.getAvOffset()) : null;
@@ -421,12 +308,7 @@
             ? Math.max(-1000, Math.min(1000, curAv - median))
             : null;
         const delta = enough ? Math.abs(suggested - curAv) : 0;
-        // `setterReady` also gates `actionable` so the Apply button
-        // can't be enabled on a host that exposes the read-only
-        // `getAvOffset` but not the `setAvOffsetMs` writer (or a
-        // load-ordering race where the setter is attached after the
-        // panel renders). Without this guard, the user would click
-        // Apply and see no change with no feedback.
+
         const actionable = enough && delta >= _MIN_DELTA_TO_SUGGEST_MS && setterReady;
         return {
             key:   'av',
@@ -448,19 +330,7 @@
         };
     }
 
-    // Detection confidence — when nearly half of events end up as
-    // "pure" misses (detector found no pitch within the window), the
-    // confidence floor is probably too strict for this signal. The
-    // reverse case (low pure rate + lots of pitch-error spread) means
-    // false positives — raise the floor.
-    // Pitch-spread threshold for the "raise the floor" branch — if the
-    // detector is finding pitches confidently AND those detections
-    // cluster tight around the expected note, the signal is clean
-    // enough that we can afford a stricter gate. A WIDE distribution
-    // at low pure rate suggests the detector is happily emitting
-    // wrong-octave / wrong-string detections (still "confident", just
-    // wrong), and tightening the floor will catch some of those.
-    const _PITCH_SPREAD_FOR_TIGHTER_FLOOR = 40;  // cents (p90 - p10)
+    const _PITCH_SPREAD_FOR_TIGHTER_FLOOR = 40;
     function _suggestConfidence(d, nd) {
         if (typeof nd.applySettings !== 'function') return null;
         const total = (d.summary && d.summary.total) || 0;
@@ -487,16 +357,12 @@
         let suggested = cur;
         let reasoning = null;
         if (pureRate > _PURE_RATE_FOR_METHOD_SWITCH && cur > 0.10) {
-            // Lower the floor by 5 percentage points, but not below 10%.
+
             suggested = Math.max(0.10, cur - 0.05);
             reasoning = `${Math.round(pureRate * 100)}% of frames dropped on confidence — lower the floor`;
         } else if (pureRate < 0.15 && cur < 0.30
                    && pitchSpread != null && pitchSpread > _PITCH_SPREAD_FOR_TIGHTER_FLOOR) {
-            // Detector hits well but spread is wide → likely confident-
-            // but-wrong detections. Try tightening the floor a notch.
-            // The pitchSpread check guards against a "low pure + tight
-            // distribution" case where the detector is genuinely doing
-            // its job and we shouldn't second-guess it.
+
             suggested = Math.min(0.30, cur + 0.05);
             reasoning = `${Math.round(pureRate * 100)}% pure-miss but pitch spread ${Math.round(pitchSpread)} c — try a stricter floor`;
         }
@@ -518,14 +384,6 @@
         };
     }
 
-    // Tuning bias — warn-only. If pitch_error_cents.median is far from
-    // zero AND the distribution is tight (small spread), the player's
-    // guitar is consistently sharp/flat. We deliberately do NOT offer
-    // a one-click apply — silently masking a real out-of-tune guitar
-    // with a pitch offset would feel like cheating and would also drift
-    // over time as strings stretch. A wide distribution means the user
-    // probably loaded the wrong arrangement (transposition), not a
-    // tuning issue — different fix, different warning.
     function _suggestTuningBias(d) {
         const pe = d.pitch_error_cents || {};
         const count = pe.count || 0;
@@ -568,11 +426,6 @@
         };
     }
 
-    // Timing window — set outer tolerance so 90% of all-event timing
-    // errors fall inside it; set hit threshold somewhat tighter. Uses
-    // the all-events distribution (not hits-only) because the goal is
-    // to NOT bucket legitimate plays as pure misses for falling
-    // outside a too-tight window.
     function _suggestTimingWindow(d, nd) {
         if (typeof nd.applySettings !== 'function') return null;
         const te = d.timing_error_ms || {};
@@ -595,10 +448,10 @@
                 apply: () => {},
             };
         }
-        // Cover the p90 side (late tail) + small padding; cap at 300 ms (slider max).
+
         const needed = Math.max(Math.abs(p10), p90) + 20;
         const tolMs = Math.max(30, Math.min(300, Math.round(needed)));
-        // Inner threshold sits ~2/3 of the way to the outer — gives daylight.
+
         const hitMs = Math.max(30, Math.min(tolMs, Math.round(tolMs * 0.67)));
         const dTol = Math.abs(tolMs - curTol * 1000);
         const dHit = Math.abs(hitMs - curHit * 1000);
@@ -623,9 +476,6 @@
         };
     }
 
-    // Pitch window — same idea, but for pitch_error_cents. p10/p90
-    // here is folded-octave cents, so the natural span is small for
-    // an in-tune player.
     function _suggestPitchWindow(d, nd) {
         if (typeof nd.applySettings !== 'function') return null;
         const pe = d.pitch_error_cents || {};
@@ -674,14 +524,6 @@
         };
     }
 
-    // Detection method — if pure-miss rate is high and we've collected
-    // enough events to trust the signal, suggest flipping method.
-    // YIN is the default on a fresh install (see `detectionMethod` in
-    // screen.js); CREPE is the upgrade path for users with quiet /
-    // ambiguous signals where YIN's autocorrelation gate is too
-    // strict. The reverse case — CREPE → YIN — fires when CREPE's
-    // model confidence drops too many frames, leaving YIN's lighter
-    // gate as the better fit for that rig.
     function _suggestMethod(d, nd) {
         if (typeof nd.applySettings !== 'function') return null;
         const total = (d.summary && d.summary.total) || 0;
@@ -705,7 +547,7 @@
         if (pureRate > _PURE_RATE_FOR_METHOD_SWITCH) {
             if (cur === 'crepe') suggested = 'yin';
             else if (cur === 'yin') suggested = 'crepe';
-            // hps isn't auto-suggested as a switch target — niche use.
+
         }
         const actionable = suggested !== cur;
         return {
@@ -725,13 +567,6 @@
         };
     }
 
-    // Canonical builders list — single source of truth for both
-    // renderAutoTune (which materialises every row) and the Apply-all
-    // handler (which iterates the same set). Order matters: A/V Sync
-    // first because it shifts the timing distribution; method last
-    // because it can alter pure-rate AND pitch spread. `warnOnly`
-    // rows (Tuning bias) are kept in the list so they render, and
-    // are filtered out inside the Apply-all loop.
     const _AUTO_TUNE_BUILDERS = [_suggestAvSync, _suggestConfidence, _suggestTuningBias, _suggestTimingWindow, _suggestPitchWindow, _suggestMethod];
 
     function renderAutoTune(nd) {
@@ -748,10 +583,7 @@
         const d = nd.getDiagnostic();
         const builders = _AUTO_TUNE_BUILDERS;
         const suggestions = builders.map(b => b(d, nd)).filter(s => s != null);
-        // Stash the suggestions on the rowsEl so the Apply-all handler
-        // can call .apply() without rebuilding them — avoids a tick-
-        // boundary race where the user clicks Apply-all just as the
-        // diagnostic changed.
+
         rowsEl._suggestions = suggestions;
 
         const total = (d.summary && d.summary.total) || 0;
@@ -776,10 +608,8 @@
             `;
         }).join('');
 
-        // Wire per-row Apply buttons. Each suggestion stashes its own
-        // .apply() closure; the DOM row carries the key for lookup.
         rowsEl.querySelectorAll('.nd-at-row-apply').forEach((btn, i) => {
-            // Find the matching suggestion by traversing up to the row.
+
             const rowDiv = btn.closest('[data-key]');
             const key = rowDiv && rowDiv.dataset.key;
             const sug = suggestions.find(s => s.key === key);
@@ -793,30 +623,22 @@
         }
     }
 
+    // Refresh all panels from a single detector snapshot.
     function render() {
         const nd = window.noteDetect;
 
-        // Always-visible Auto-tune panel (renders even when tuning mode off).
         renderAutoTune(nd);
 
-        // Tuning-mode gate. Off by default → just the toggle is visible;
-        // the Reference Recording + Diagnostic panels stay hidden. The
-        // checkbox state is sourced from the plugin singleton (not the
-        // DOM) so it stays in sync if some other surface flips the flag.
-        // Auto-record toggle — always visible (not gated by tuning mode).
         const autoRec   = !!(nd && typeof nd.isAutoRecord === 'function' && nd.isAutoRecord());
         const autoRecCb = _q('nd-auto-record');
         if (autoRecCb && autoRecCb.checked !== autoRec) autoRecCb.checked = autoRec;
         if (autoRecCb) autoRecCb.disabled = !nd;
 
-        // Auto-calibrate toggle — always visible.
         const autoCal   = !!(nd && typeof nd.isAutoCalibrate === 'function' && nd.isAutoCalibrate());
         const autoCalCb = _q('nd-auto-calibrate');
         if (autoCalCb && autoCalCb.checked !== autoCal) autoCalCb.checked = autoCal;
         if (autoCalCb) autoCalCb.disabled = !nd;
 
-        // Scoring HUD skin select — value sourced from the plugin so it
-        // stays in sync if another surface (or another tab) switched it.
         const skinSel2 = _q('nd-skin');
         if (skinSel2) {
             const skin = (nd && typeof nd.getSkin === 'function') ? nd.getSkin() : 'neon';
@@ -830,7 +652,7 @@
         if (cb && cb.checked !== tuning) cb.checked = tuning;
         if (cb) cb.disabled = !nd;
         if (panels) panels.classList.toggle('hidden', !tuning);
-        if (!tuning) return;   // nothing else to render — panels are hidden
+        if (!tuning) return;
 
         renderRecording(nd);
 
@@ -863,7 +685,6 @@
         _q('nd-diag-hits').textContent = d.summary.hits;
         _q('nd-diag-misses').textContent = d.summary.misses;
 
-        // Breakdown bars (only categories with > 0 events).
         const bk = _q('nd-diag-breakdown');
         if (bk) {
             const ms = d.summary.misses;
@@ -890,16 +711,11 @@
             }
         }
 
-        // Metadata footer — song + tunables — handy when sharing the JSON.
         const meta = _q('nd-diag-meta');
         if (meta) {
             const bh = d.benchmark_hint || {};
             const s = d.settings || {};
-            // Song metadata is user-controlled (sloppak manifests can
-            // contain anything), so every interpolation through this
-            // path is escaped. Numeric fields are coerced via Number
-            // before stringifying so even if a manifest puts an HTML
-            // string in `pitch_tolerance_cents` we don't render it raw.
+
             const songLine = (bh.title || bh.artist)
                 ? `${_esc(bh.artist || '?')} — ${_esc(bh.title || '?')}` + (bh.arrangement ? ` (${_esc(bh.arrangement)})` : '')
                 : 'no song loaded';
@@ -928,19 +744,13 @@
             const nd = window.noteDetect;
             if (nd && typeof nd.resetDiagnostic === 'function') {
                 nd.resetDiagnostic();
-                render();   // immediate visual feedback that the counters cleared
+                render();
             }
         };
     }
     const rfBtn = _q('nd-diag-refresh');
     if (rfBtn) rfBtn.onclick = render;
 
-    // Auto-tune "Apply all" footer button — fires every actionable
-    // suggestion in order. We rebuild the suggestions fresh from the
-    // latest diagnostic instead of trusting the rowsEl-stashed list
-    // (one stale tick between display and click is enough for the
-    // values to have drifted; rebuilding is cheap and avoids
-    // surprising the user with a 30-second-old suggestion).
     const allBtn = _q('nd-at-apply-all');
     if (allBtn) {
         allBtn.onclick = () => {
@@ -948,17 +758,7 @@
             const nd = window.noteDetect;
             if (!nd || typeof nd.getDiagnostic !== 'function') return;
             const d = nd.getDiagnostic();
-            // Reuse the canonical builders list (avoids drift between
-            // renderAutoTune's row set and Apply-all's set — a builder
-            // added to one but not the other would otherwise appear
-            // in the panel but be silently skipped by Apply-all).
-            // Apply in the canonical order. A/V Sync first because it
-            // shifts the entire timing distribution; window-sizing
-            // rows would otherwise propose tolerances for the pre-
-            // shift distribution. Method change last because it can
-            // alter both pure-rate AND pitch-error spread, and we
-            // don't want the earlier rows fighting it. The `warnOnly`
-            // filter inside the loop transparently skips Tuning bias.
+
             for (const b of _AUTO_TUNE_BUILDERS) {
                 const s = b(d, nd);
                 if (s && !s.warnOnly && s.actionable) s.apply();
@@ -967,7 +767,6 @@
         };
     }
 
-    // Tuning-mode toggle — drives whether the panels below show.
     const tuneCb = _q('nd-tuning-mode');
     if (tuneCb) {
         tuneCb.onchange = () => {
@@ -977,8 +776,6 @@
         };
     }
 
-    // Auto-record toggle — capture every play. State sourced from the
-    // plugin singleton so it stays in sync if another surface flips it.
     const autoRecCb = _q('nd-auto-record');
     if (autoRecCb) {
         autoRecCb.onchange = () => {
@@ -987,7 +784,6 @@
         };
     }
 
-    // Auto-calibrate toggle — auto-derive the A/V offset each play.
     const autoCalCb = _q('nd-auto-calibrate');
     if (autoCalCb) {
         autoCalCb.onchange = () => {
@@ -996,8 +792,6 @@
         };
     }
 
-    // Scoring HUD skin — themes the live HUD + results screen (and the
-    // highway's FX palette). setSkin live-applies to every open root.
     const skinSel = _q('nd-skin');
     if (skinSel) {
         skinSel.onchange = () => {
@@ -1006,8 +800,6 @@
         };
     }
 
-    // Results text glow (A/B) — standalone key the card reads directly on
-    // its next render. No live root to update; applies on the next results card.
     const glowCb = _q('nd-results-glow');
     if (glowCb) {
         try { glowCb.checked = localStorage.getItem('slopsmith_notedetect_results_glow') === '1'; } catch (_) {}
@@ -1016,8 +808,6 @@
         };
     }
 
-    // Auto-save a card after every song (opt-in, default OFF) — a standalone
-    // key the song-end summary reads. Reuses the save folder below.
     const autoSaveCb = _q('nd-autosave-card');
     if (autoSaveCb) {
         try { autoSaveCb.checked = localStorage.getItem('slopsmith_notedetect_autosave_card') === '1'; } catch (_) {}
@@ -1026,10 +816,6 @@
         };
     }
 
-    // Playlist auto-advance delay (seconds) — a standalone key the results
-    // card's Up-Next countdown reads. Blank field = the default (10 s);
-    // 0 = advance immediately. Any non-negative number is accepted (the
-    // tester ask: a manual value over presets).
     const queueDelayInput = _q('nd-queue-delay');
     if (queueDelayInput) {
         try {
@@ -1049,9 +835,6 @@
         };
     }
 
-    // Auto-drill: contiguous missed notes before dropping into a drill loop
-    // (0 / blank = off). screen.js reads slopsmith_notedetect_autodrill_misses
-    // via _ndAutoDrillMissesSetting(), refreshed each song in resetScoring().
     const autoDrillInput = _q('nd-autodrill-misses');
     if (autoDrillInput) {
         try {
@@ -1071,10 +854,6 @@
         };
     }
 
-    // Playlist display toggles, both default ON ('0' = off, anything else =
-    // on — the same convention the card's readers use). "Show scores" off
-    // collapses queued cards to the Up-Next countdown; "set summary" off
-    // skips the Set Complete card after the last song.
     for (const [id, key] of [
         ['nd-queue-show-scores', 'slopsmith_notedetect_queue_show_scores'],
         ['nd-queue-set-summary', 'slopsmith_notedetect_queue_set_summary'],
@@ -1087,8 +866,6 @@
         };
     }
 
-    // Save folder for cards — blank means "use the server default"
-    // (the user's Pictures folder), keeping the resolution server-side.
     const saveDirInput = _q('nd-save-dir');
     if (saveDirInput) {
         try { saveDirInput.value = localStorage.getItem('slopsmith_notedetect_save_dir') || ''; } catch (_) {}
@@ -1101,12 +878,6 @@
         };
         saveDirInput.onchange = persistSaveDir;
 
-        // Browse… opens the desktop shell's native folder picker. Only the
-        // desktop build exposes the bridge (window.feedBackDesktop, or the
-        // legacy slopsmithDesktop alias); in the web testbed it's absent, so
-        // the button stays hidden and typing an absolute path is the only
-        // input. Picking a folder fills the field and persists it the same
-        // way an edit-and-blur would.
         const browseBtn = _q('nd-save-dir-browse');
         const desktop = (typeof window !== 'undefined')
             ? (window.feedBackDesktop || window.slopsmithDesktop) : null;
@@ -1116,37 +887,21 @@
                 try {
                     const dir = await desktop.pickDirectory();
                     if (dir) { saveDirInput.value = dir; persistSaveDir(); }
-                } catch (_) { /* dialog cancelled / unavailable */ }
+                } catch (_) {  }
             };
         }
     }
 
-    // Training upload destination — text input that pre-fills with
-    // either the user's previously-saved value OR the curated default
-    // URL. Persisted under 'nd_training_upload_url'. Empty string means
-    // "use the server default", which keeps the server-side code as the
-    // source of truth when the user clears the field.
-    //
-    // The default URL is fetched from GET /api/plugins/note_detect/config
-    // so routes.py is the single source of truth. The literal below is
-    // only an offline fallback for when that fetch fails — it does NOT
-    // need to be kept in sync and may be stale.
     const _UPLOAD_URL_KEY = 'nd_training_upload_url';
     const _UPLOAD_URL_FALLBACK = 'https://e.pcloud.com/#/puplink?code=itd7ZwmOK8S2D6XSAE1Q9cUPaF5c9WFfk';
     let _uploadUrlDefault = _UPLOAD_URL_FALLBACK;
     const urlInput = _q('nd-upload-url');
     const urlReset = _q('nd-upload-url-reset');
     if (urlInput) {
-        // Pre-fill with the saved value if any, otherwise show the
-        // current default so the user can see what gets used and
-        // edit from there.
+
         let saved = '';
         try { saved = localStorage.getItem(_UPLOAD_URL_KEY) || ''; } catch (_) {}
-        // Whether the user has a saved override at page-load time. Used
-        // by the /config fetch below so it never overwrites a saved
-        // value — not even one that happens to equal the fallback
-        // literal (which the value-equality check alone can't tell apart
-        // from "no override").
+
         const hasSavedOverride = !!saved;
         urlInput.value = saved || _uploadUrlDefault;
         urlInput.onchange = () => {
@@ -1155,36 +910,26 @@
                 if (v && v !== _uploadUrlDefault) {
                     localStorage.setItem(_UPLOAD_URL_KEY, v);
                 } else {
-                    // Default or empty — drop the override so the
-                    // server uses its own default. Keeps the storage
-                    // clean across plugin upgrades.
+
                     localStorage.removeItem(_UPLOAD_URL_KEY);
                 }
-            } catch (_) { /* quota / privacy mode */ }
+            } catch (_) {  }
         };
-        // Fetch the authoritative default from the server. Adopt it into
-        // the field ONLY when the user has no saved override — otherwise
-        // we'd silently redirect their configured destination (including
-        // the case where a saved override coincidentally equals the
-        // fallback literal).
+
         fetch('/api/plugins/note_detect/config')
             .then((r) => (r.ok ? r.json() : null))
             .then((cfg) => {
                 const fromServer = cfg && cfg.pcloud_default_url;
                 if (!fromServer) return;
                 _uploadUrlDefault = fromServer;
-                // Adopt the server default into the field only when the
-                // user has no saved override AND hasn't started editing
-                // — the field must still show the fallback verbatim and
-                // not be focused, or a slow fetch would clobber input
-                // the user is typing right now.
+
                 if (!hasSavedOverride
                     && urlInput.value === _UPLOAD_URL_FALLBACK
                     && document.activeElement !== urlInput) {
                     urlInput.value = _uploadUrlDefault;
                 }
             })
-            .catch(() => { /* offline — keep the fallback literal */ });
+            .catch(() => {  });
     }
     if (urlReset && urlInput) {
         urlReset.onclick = () => {
@@ -1193,15 +938,8 @@
         };
     }
 
-    // (Recording buttons moved to the gear popover — this page is the
-    // read-only "latest save path" mirror, no click handlers.)
-
     render();
-    // Auto-refresh while the section is in the DOM. Self-cancels once
-    // the diagnostic block leaves the page so we don't keep ticking
-    // forever after the user navigates away from Settings. Probe the
-    // smallest stable anchor in our section (the tuning-mode checkbox
-    // — always present) instead of any conditional element.
+
     const _tickId = setInterval(() => {
         if (!document.getElementById('nd-tuning-mode')) {
             clearInterval(_tickId);
