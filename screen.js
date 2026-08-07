@@ -96,7 +96,7 @@ const _ND_STORAGE_KEY = 'slopsmith_notedetect';
 
 const _ND_AUTO_ENABLE_RETRY_MS = 1500;
 
-const _ND_VERSION = '1.32.1';
+const _ND_VERSION = '1.32.2';
 
 const _ND_HARMONIC_FALLBACK_MAX_HZ = 140;
 const _ND_HARMONIC_FALLBACK_RATIOS = [1, 2, 3, 4, 5];

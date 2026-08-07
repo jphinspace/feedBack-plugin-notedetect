@@ -45,7 +45,7 @@
     --nd-font-display: 'Orbitron', ui-sans-serif, system-ui, sans-serif;
     --nd-font-grade: 'Orbitron', ui-sans-serif, system-ui, sans-serif;
     --nd-glow-accent: 0 0 12px rgba(0, 240, 255, 0.75);
-    --nd-glow-current: 0 0 8px currentColor;
+    --nd-glow-current: 0 0 8px currentcolor;
     --nd-radius: 10px;
     --nd-clip: none;
 
@@ -438,7 +438,6 @@ body:has(#v3-upnext) .nd-hud {
 }
 
 .nd-sum-acc-n {
-
     color: var(--nd-accent);
 }
 
@@ -806,9 +805,7 @@ body:has(#v3-upnext) .nd-hud {
     isolation: isolate;
     color: #fff;
     background: linear-gradient(135deg, var(--nd-accent), var(--nd-accent2));
-
     border-color: var(--nd-hero-border, transparent);
-
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
     transition: background 0.15s, border-color 0.15s, filter 0.15s,
                 transform 0.08s ease;
